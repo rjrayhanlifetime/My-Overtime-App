@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#e2136e">
+<title>My Overtime Admin Panel</title>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:#f5f6f8;color:#222}
+header{background:linear-gradient(135deg,#e2136e,#c9005d);color:#fff;padding:22px 16px;box-shadow:0 7px 24px rgba(226,19,110,.22)}
+.wrap{max-width:1050px;margin:auto;padding:16px}
+h1{margin:0;font-size:23px}.sub{opacity:.9;margin-top:5px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(0,0,0,.07)}
+.stat b{display:block;font-size:25px;color:#e2136e;margin-top:5px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+input,textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:12px;font-size:14px;outline:none}
+input:focus,textarea:focus{border-color:#e2136e}
+.search{flex:1;min-width:220px}
+button{border:0;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer}
+.primary{background:#e2136e;color:#fff}.light{background:#fff;border:1px solid #ddd}.danger{background:#fff0f4;color:#c40052}
+.layout{display:grid;grid-template-columns:360px 1fr;gap:15px}
+.user-list{max-height:650px;overflow:auto}
+.user{padding:13px;border:1px solid #eee;border-radius:14px;margin-bottom:9px;cursor:pointer;background:#fff}
+.user:hover,.user.active{border-color:#e2136e;box-shadow:0 5px 15px rgba(226,19,110,.10)}
+.user strong{display:block}.muted{color:#777;font-size:12px;margin-top:4px}
+.detail h2{font-size:19px;margin:0 0 13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;font-weight:800;color:#666;display:block;margin:3px 0 5px}
+textarea{min-height:350px;resize:vertical;font-family:monospace;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.empty{text-align:center;color:#777;padding:35px 10px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 17px;border-radius:12px;display:none;z-index:20}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.detail{min-width:0}.user-list{max-height:400px}}
+@media(max-width:430px){.stats{grid-template-columns:1fr}.wrap{padding:12px}}
+
+/* ===== PREMIUM ADMIN ANIMATION ===== */
+:root{--pink:#e2136e;--pink2:#ff4b9b;--ink:#202124}
+body{background:
+radial-gradient(circle at 8% 0%,rgba(226,19,110,.12),transparent 28%),
+radial-gradient(circle at 95% 18%,rgba(116,70,216,.10),transparent 25%),#f6f7fb;
+overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+background-image:radial-gradient(rgba(226,19,110,.12) 1px,transparent 1px);
+background-size:22px 22px;mask-image:linear-gradient(to bottom,#000,transparent 85%)}
+header{position:relative;overflow:hidden;background:linear-gradient(120deg,#c9005d,#e2136e 45%,#ff4b9b);
+background-size:200% 200%;animation:gradientMove 8s ease infinite}
+header:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;
+right:-70px;top:-100px;background:rgba(255,255,255,.13);filter:blur(2px);
+animation:floatBubble 5s ease-in-out infinite}
+header:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;
+left:28%;bottom:-80px;background:rgba(255,255,255,.08);animation:floatBubble 7s ease-in-out infinite reverse}
+header h1,.sub{position:relative;z-index:2}
+.card{border:1px solid rgba(255,255,255,.8);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;animation:cardIn .55s ease both}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 35px rgba(30,30,50,.10);border-color:rgba(226,19,110,.20)}
+.stats .card:nth-child(1){animation-delay:.04s}.stats .card:nth-child(2){animation-delay:.10s}.stats .card:nth-child(3){animation-delay:.16s}
+.stat b{animation:numberPop .55s ease .25s both}
+button{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(226,19,110,.14)}
+button:active{transform:scale(.95)}
+.primary{background:linear-gradient(135deg,#e2136e,#ff3d91);background-size:150% 150%;animation:buttonGlow 4s ease infinite}
+input,textarea{transition:border-color .2s,box-shadow .2s,transform .2s;background:rgba(255,255,255,.92)}
+input:focus,textarea:focus{transform:translateY(-1px);box-shadow:0 0 0 4px rgba(226,19,110,.08),0 8px 20px rgba(0,0,0,.05)}
+.user{position:relative;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.user:after{content:"";position:absolute;top:0;left:-120%;width:70%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+transform:skewX(-18deg);transition:left .55s ease;pointer-events:none}
+.user:hover:after{left:145%}
+.user.active{transform:translateX(3px);background:linear-gradient(135deg,#fff,#fff5f9);animation:selectedPulse 1.5s ease infinite}
+.user strong{transition:color .2s}.user:hover strong{color:var(--pink)}
+.detail{animation:detailIn .45s ease}
+.actions .danger{transition:all .2s}.actions .danger:hover{background:#ffe2ec;color:#a50043}
+.empty{animation:fadeUp .4s ease}
+.toast{box-shadow:0 12px 30px rgba(0,0,0,.22);animation:toastIn .3s ease}
+@keyframes gradientMove{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+@keyframes floatBubble{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(18px) scale(1.06)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes detailIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes numberPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes buttonGlow{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+@keyframes selectedPulse{0%,100%{box-shadow:0 5px 15px rgba(226,19,110,.10)}50%{box-shadow:0 8px 25px rgba(226,19,110,.18)}}
+@keyframes onlineDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,.75)}70%{box-shadow:0 0 0 9px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,15px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<style id="professional-pink-white-admin">
+:root{--p:#e2136e;--p2:#ff4f9b;--soft:#fff1f7;--line:#f1d5e1;--dark:#222;--muted:#7d7480}
+body{background:linear-gradient(180deg,#fff7fb 0,#f7f8fb 38%,#f4f5f8 100%)}
+.wrap{max-width:1180px}
+header{padding:26px 16px 28px;border-radius:0 0 28px 28px}
+.header-inner{max-width:1180px;margin:auto}
+.admin-brand{display:flex;align-items:center;gap:13px}
+.admin-logo{width:52px;height:52px;border-radius:16px;background:#fff;color:var(--p);display:grid;place-items:center;font-size:25px;font-weight:900;box-shadow:0 10px 28px rgba(0,0,0,.14)}
+.admin-title{font-size:25px;font-weight:900}.admin-sub{font-size:12px;opacity:.9;margin-top:4px}
+.live-pill{margin-top:15px;display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);border-radius:999px;font-size:11px;font-weight:800}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:livePulse 1.5s infinite}
+@keyframes livePulse{70%{box-shadow:0 0 0 8px rgba(255,255,255,0)}}
+.stats{gap:14px;margin:18px 0}.stat{position:relative;overflow:hidden;border:1px solid #f4dce7;background:linear-gradient(145deg,#fff,#fff9fc)}
+.stat:after{content:"";position:absolute;width:85px;height:85px;right:-38px;bottom:-42px;border-radius:50%;background:rgba(226,19,110,.06)}
+.stat small{color:#777}.stat b{color:var(--p);font-size:27px}
+.toolbar{background:#fff;border:1px solid var(--line);padding:11px;border-radius:17px;box-shadow:0 7px 25px rgba(226,19,110,.06)}
+.toolbar input{background:#fff8fb;border-color:#f2d4e0}.toolbar button{white-space:nowrap}
+.layout{grid-template-columns:350px 1fr;gap:16px;align-items:start}
+.panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.panel-title h2{margin:0;font-size:17px}.count-pill{background:var(--soft);color:var(--p);padding:5px 9px;border-radius:999px;font-size:10px;font-weight:900}
+.user-list{max-height:690px;padding-right:3px}.user{border:1px solid #f0e3e9;background:linear-gradient(145deg,#fff,#fffafd);padding:14px;border-radius:16px}.user.active{border-color:var(--p);background:linear-gradient(145deg,#fff,#fff0f6);box-shadow:0 8px 22px rgba(226,19,110,.14)}
+.user-top{display:flex;align-items:center;gap:10px}.avatar{width:39px;height:39px;border-radius:12px;background:linear-gradient(135deg,var(--p),#b90055);color:#fff;display:grid;place-items:center;font-weight:900;flex:none}.user-main{min-width:0;flex:1}.user strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.tag{padding:4px 7px;border-radius:7px;background:#fff0f6;color:var(--p);font-size:9px;font-weight:800;border:1px solid #ffd8e8}.tag.gray{background:#f7f7f8;color:#777;border-color:#eee}
+.detail{border:1px solid var(--line);background:linear-gradient(145deg,#fff,#fffafd);padding:18px}.detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #f2e3e9;padding-bottom:13px;margin-bottom:14px}.detail-head h2{margin:0;color:#222}.detail-badge{background:var(--p);color:#fff;padding:6px 9px;border-radius:8px;font-size:9px;font-weight:900}
+.detail-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}.mini{background:#fff;border:1px solid #f0dce5;border-radius:13px;padding:10px}.mini small{display:block;color:#8b8188;font-size:9px}.mini b{display:block;color:var(--p);font-size:15px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info-section{border:1px solid #efdbe5;border-radius:16px;margin:11px 0;overflow:hidden;background:#fff}.info-section-head{padding:11px 13px;background:linear-gradient(90deg,#fff0f6,#fff);color:var(--p);font-size:12px;font-weight:900;border-bottom:1px solid #f4dce7}.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:11px}.info-item{background:#fffafd;border:1px solid #f2e5ea;border-radius:10px;padding:9px;min-width:0}.info-item small{display:block;color:#938891;font-size:9px;margin-bottom:4px}.info-item b{display:block;color:#2b282b;font-size:12px;word-break:break-word}.info-item.full{grid-column:1/-1}
+.all-data{padding:12px}.data-row{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:8px 0;border-bottom:1px dashed #eadbe2;font-size:11px}.data-row:last-child{border-bottom:0}.data-key{color:var(--p);font-weight:900}.data-value{color:#444;word-break:break-word}.data-group{border:1px solid #f0dfe6;border-radius:12px;margin:8px 0;overflow:hidden}.data-group>summary{cursor:pointer;padding:9px 11px;background:#fff7fa;color:var(--p);font-weight:900;font-size:11px}.data-group-body{padding:0 11px}
+.ot-table-wrap{overflow:auto}.ot-table{width:100%;border-collapse:collapse;min-width:620px;font-size:10px}.ot-table th{background:var(--p);color:#fff;padding:8px;text-align:left}.ot-table td{border-bottom:1px solid #f0e2e8;padding:8px;background:#fff}.ot-table tr:nth-child(even) td{background:#fff9fc}
+.actions{position:sticky;bottom:8px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);padding:10px;border:1px solid #f0dce5;border-radius:15px;z-index:5}.actions button{flex:1}
+.toast{background:linear-gradient(135deg,#222,#3b2531);border:1px solid rgba(255,255,255,.15)}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.user-list{max-height:390px}.detail-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.admin-title{font-size:20px}.detail-summary{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:1fr}.info-item.full{grid-column:auto}.data-row{grid-template-columns:105px 1fr}.actions{position:static}.actions button{flex:auto}.stats{grid-template-columns:1fr 1fr}.stats .card:last-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><div class="wrap header-inner" style="padding:0 4px">
+<div class="admin-brand"><div class="admin-logo">⌘</div><div><div class="admin-title">My Overtime — Admin Panel</div><div class="admin-sub">সব User-এর Profile, Salary, OT, Attendance, History ও সম্পূর্ণ Data এক জায়গায়</div></div></div>
+<div class="live-pill"><span class="live-dot"></span> Firebase Live Data • Real-time Sync</div>
+</div></header>
+
+<main class="wrap">
+<div class="stats">
+  <div class="card stat"><small>মোট Users</small><b id="totalUsers">0</b></div>
+  <div class="card stat"><small>Setup Complete</small><b id="completeUsers">0</b></div>
+  <div class="card stat"><small>Selected Months</small><b id="months">0</b></div>
+</div>
+<div class="toolbar">
+  <input id="search" class="search" placeholder="নাম / Employee ID / Office / Section দিয়ে Search...">
+  <button class="primary" onclick="loadUsers()">↻ Refresh</button>
+  <button class="light" onclick="downloadBackup()">Backup JSON</button>
+</div>
+<div class="layout">
+<section class="card">
+ <div class="panel-title"><h2>All Users</h2><span id="userCount" class="count-pill">0 Users</span></div>
+ <div id="userList" class="user-list"><div class="empty">Loading...</div></div>
+</section>
+<section class="card detail">
+ <div class="detail-head"><h2>User Details</h2><span id="detailBadge" class="detail-badge">SELECT USER</span></div>
+ <div id="noUser" class="empty">বাম পাশ থেকে একজন User নির্বাচন করুন — তারপর তার সব তথ্য এখানে দেখা যাবে।</div>
+ <div id="editor" style="display:none">
+  <div class="detail-summary">
+   <div class="mini"><small>Name</small><b id="sumName">—</b></div><div class="mini"><small>Employee ID</small><b id="sumId">—</b></div><div class="mini"><small>Basic Salary</small><b id="sumBasic">৳0</b></div><div class="mini"><small>OT Rate</small><b id="sumOt">৳0</b></div>
+  </div>
+  <div class="info-section"><div class="info-section-head">👤 Profile Information</div><div class="info-grid">
+   <div class="info-item"><small>Office</small><b id="officeView">—</b></div><div class="info-item"><small>Name</small><b id="nameView">—</b></div><div class="info-item"><small>Employee ID / Key</small><b id="uidView">—</b></div><div class="info-item"><small>Section</small><b id="sectionView">—</b></div><div class="info-item"><small>Join Date</small><b id="joinView">—</b></div><div class="info-item"><small>Selected Month</small><b id="monthView">—</b></div>
+  </div></div>
+  <div class="info-section"><div class="info-section-head">💰 Salary & Allowance</div><div class="info-grid">
+   <div class="info-item"><small>Basic Salary</small><b id="basicView">৳0</b></div><div class="info-item"><small>OT Rate / Hour</small><b id="otRateView">৳0</b></div><div class="info-item"><small>Tiffin</small><b id="tiffinView">৳0</b></div><div class="info-item"><small>Night Allowance</small><b id="nightView">৳0</b></div><div class="info-item"><small>Attendance Bonus</small><b id="attendanceView">৳0</b></div>
+  </div></div>
+  <div id="dynamicDetails"></div>
+  <div class="info-section"><div class="info-section-head">✏️ Edit Core Information</div><div class="info-grid">
+   <div class="info-item"><small>Office</small><input id="office"></div><div class="info-item"><small>Name</small><input id="name"></div><div class="info-item"><small>Employee ID / Key</small><input id="uid" disabled></div><div class="info-item"><small>Section</small><input id="section"></div><div class="info-item"><small>Join Date</small><input id="join"></div><div class="info-item"><small>Selected Month</small><input id="month"></div><div class="info-item"><small>Basic Salary</small><input id="basic" type="number"></div><div class="info-item"><small>OT Rate / Hour</small><input id="otRate" type="number"></div><div class="info-item"><small>Tiffin</small><input id="tiffin" type="number"></div><div class="info-item"><small>Night Allowance</small><input id="night" type="number"></div><div class="info-item"><small>Attendance Bonus</small><input id="attendance" type="number"></div>
+  </div></div>
+  <div class="info-section"><div class="info-section-head">🧾 Complete Raw Data — সব Firebase Field</div><div class="all-data" id="allData"></div></div>
+  <div class="info-section"><div class="info-section-head">🔧 Advanced JSON Edit</div><div style="padding:12px"><textarea id="jsonData" style="min-height:260px"></textarea></div></div>
+  <div class="actions"><button class="primary" onclick="saveUser()">Save Changes</button><button class="danger" onclick="deleteUser()">Delete User</button></div>
+ </div>
+</section>
+</div>
+</main>
+<div id="toast" class="toast"></div>
+<div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(255,255,255,.72);backdrop-filter:blur(7px);z-index:50;display:flex;align-items:center;justify-content:center;transition:opacity .3s">
+  <div style="background:#fff;padding:22px 28px;border-radius:22px;box-shadow:0 18px 50px rgba(0,0,0,.12);text-align:center">
+    <div style="width:34px;height:34px;border:4px solid #ffd2e4;border-top-color:#e2136e;border-radius:50%;margin:auto;animation:spin .75s linear infinite"></div>
+    <div style="margin-top:10px;font-weight:800;color:#e2136e;font-size:13px">Loading Users...</div>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyA72vpoVjjuLpU3UJA1Y5j-aX1A1tsoPKY",
+ authDomain:"my-overtime-9a89b.firebaseapp.com",
+ databaseURL:"https://my-overtime-9a89b-default-rtdb.firebaseio.com",
+ projectId:"my-overtime-9a89b",
+ storageBucket:"my-overtime-9a89b.firebasestorage.app",
+ messagingSenderId:"413075154428",
+ appId:"1:413075154428:web:76ebcf815ccd79d23e79",
+ measurementId:"G-5N3FXNJ9FD"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const root=db.ref("myOvertimeUsers");
+let users={};
+let selectedKey=null;
+
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",2200)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+async function loadUsers(){
+ try{
+  const snap=await root.once("value");
+  users=snap.val()||{};
+  renderUsers();
+  updateStats();
+ }catch(e){toast("Firebase data load হয়নি");console.error(e)}
+}
+
+function updateStats(){
+ const arr=Object.values(users);
+ document.getElementById("totalUsers").textContent=arr.length;
+ document.getElementById("completeUsers").textContent=arr.filter(x=>x&&x.setupComplete).length;
+ document.getElementById("months").textContent=new Set(arr.map(x=>x&&x.selectedMonth).filter(Boolean)).size;
+}
+
+function renderUsers(){
+ const q=document.getElementById('search').value.trim().toLowerCase();
+ const list=document.getElementById('userList');
+ const entries=Object.entries(users).filter(([k,d])=>{const p=d?.profile||{};return !q||[k,p.name,p.id,p.office,p.section,d?.selectedMonth].some(v=>String(v??'').toLowerCase().includes(q));});
+ document.getElementById('userCount').textContent=entries.length+' Users';
+ if(!entries.length){list.innerHTML='<div class="empty">কোনো User পাওয়া যায়নি</div>';return}
+ list.innerHTML=entries.map(([k,d])=>{const p=d?.profile||{};const name=p.name||'Unnamed User';const initial=esc(name.trim().charAt(0).toUpperCase()||'U');const status=d?.setupComplete?'Setup Complete':'Setup Pending';return `<div class="user ${selectedKey===k?'active':''}" onclick="selectUser('${esc(k)}')"><div class="user-top"><div class="avatar">${initial}</div><div class="user-main"><strong>${esc(name)}</strong><div class="muted">ID: ${esc(p.id||k)}</div></div></div><div class="user-meta"><span class="tag">${esc(p.office||'No Office')}</span><span class="tag gray">${esc(d?.selectedMonth||'No Month')}</span><span class="tag ${d?.setupComplete?'':'gray'}">${status}</span></div></div>`}).join('');
+}
+
+function money(v){return '৳'+Number(v||0).toLocaleString('en-US')}
+function short(v){if(v===null||v===undefined||v==='')return '—'; if(typeof v==='object')return JSON.stringify(v); return String(v)}
+function prettyKey(k){return String(k).replace(/([A-Z])/g,' $1').replace(/[_-]/g,' ').replace(/\b\w/g,m=>m.toUpperCase())}
+function valueHtml(v){
+ if(v===null||v===undefined||v==='')return '<span style="color:#aaa">—</span>';
+ if(typeof v==='object')return renderGroup(v);
+ return esc(String(v));
+}
+function renderGroup(obj){
+ let html='';
+ Object.entries(obj||{}).forEach(([k,v])=>{
+   if(v && typeof v==='object') html+=`<details class="data-group"><summary>${esc(prettyKey(k))}</summary><div class="data-group-body">${renderGroup(v)}</div></details>`;
+   else html+=`<div class="data-row"><div class="data-key">${esc(prettyKey(k))}</div><div class="data-value">${valueHtml(v)}</div></div>`;
+ });
+ return html||'<div class="data-row"><div class="data-value">No data</div></div>';
+}
+function buildDynamicDetails(d){
+ const known=['profile','salary','selectedMonth','setupComplete'];
+ let html='';
+ Object.entries(d||{}).forEach(([k,v])=>{
+  if(known.includes(k))return;
+  const title=prettyKey(k);
+  html+=`<div class="info-section"><div class="info-section-head">📌 ${esc(title)}</div><div class="all-data">${renderGroup(v)}</div></div>`;
+ });
+ document.getElementById('dynamicDetails').innerHTML=html||'';
+}
+function selectUser(key){
+ selectedKey=key;
+ const d=users[key]||{};
+ const p=d.profile||{}, s=d.salary||{};
+ document.getElementById('noUser').style.display='none';
+ document.getElementById('editor').style.display='block';
+ document.getElementById('detailBadge').textContent=(p.name||'USER').toUpperCase();
+ document.getElementById('sumName').textContent=p.name||'—'; document.getElementById('sumId').textContent=p.id||key;
+ document.getElementById('sumBasic').textContent=money(s.basic); document.getElementById('sumOt').textContent=money(s.otRate);
+ [['officeView',p.office],['nameView',p.name],['uidView',key],['sectionView',p.section],['joinView',p.join],['monthView',d.selectedMonth]].forEach(([id,v])=>document.getElementById(id).textContent=short(v));
+ [['basicView',s.basic],['otRateView',s.otRate],['tiffinView',s.tiffin],['nightView',s.night],['attendanceView',s.attendance]].forEach(([id,v])=>document.getElementById(id).textContent=money(v));
+ document.getElementById('uid').value=key; document.getElementById('office').value=p.office||''; document.getElementById('name').value=p.name||''; document.getElementById('section').value=p.section||''; document.getElementById('join').value=p.join||''; document.getElementById('month').value=d.selectedMonth||'';
+ document.getElementById('basic').value=s.basic??0; document.getElementById('otRate').value=s.otRate??0; document.getElementById('tiffin').value=s.tiffin??0; document.getElementById('night').value=s.night??0; document.getElementById('attendance').value=s.attendance??0;
+ document.getElementById('jsonData').value=JSON.stringify(d,null,2);
+ document.getElementById('allData').innerHTML=renderGroup(d);
+ buildDynamicDetails(d); renderUsers();
+}
+
+async function saveUser(){
+ if(!selectedKey)return;
+ try{
+  let d=JSON.parse(document.getElementById("jsonData").value);
+  d.profile=d.profile||{};
+  d.salary=d.salary||{};
+  d.profile.office=document.getElementById("office").value.trim();
+  d.profile.name=document.getElementById("name").value.trim();
+  d.profile.id=d.profile.id||selectedKey;
+  d.profile.section=document.getElementById("section").value.trim();
+  d.profile.join=document.getElementById("join").value;
+  d.selectedMonth=document.getElementById("month").value.trim();
+  d.salary.basic=Number(document.getElementById("basic").value)||0;
+  d.salary.otRate=Number(document.getElementById("otRate").value)||0;
+  d.salary.tiffin=Number(document.getElementById("tiffin").value)||0;
+  d.salary.night=Number(document.getElementById("night").value)||0;
+  d.salary.attendance=Number(document.getElementById("attendance").value)||0;
+  await root.child(selectedKey).set(d);
+  users[selectedKey]=d;
+  document.getElementById("jsonData").value=JSON.stringify(d,null,2);
+  renderUsers();updateStats();toast("User data saved ✓");
+ }catch(e){toast("JSON ভুল অথবা Save হয়নি");console.error(e)}
+}
+
+async function deleteUser(){
+ if(!selectedKey)return;
+ const p=users[selectedKey]?.profile||{};
+ if(!confirm(`"${p.name||selectedKey}" User delete করবেন?`))return;
+ try{
+  await root.child(selectedKey).remove();
+  delete users[selectedKey];selectedKey=null;
+  document.getElementById("editor").style.display="none";
+  document.getElementById("noUser").style.display="block";
+  renderUsers();updateStats();toast("User deleted");
+ }catch(e){toast("Delete হয়নি");console.error(e)}
+}
+
+function downloadBackup(){
+ const blob=new Blob([JSON.stringify(users,null,2)],{type:"application/json"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download="my-overtime-users-backup.json";a.click();
+ URL.revokeObjectURL(a.href);
+}
+
+document.getElementById("search").addEventListener("input",renderUsers);
+root.on("value",snap=>{
+ users=snap.val()||{};
+ renderUsers();updateStats();
+ const o=document.getElementById("loadingOverlay");
+ if(o){o.style.opacity="0";setTimeout(()=>o.remove(),320)}
+});
+loadUsers();
+</script>
+</body>
+</html>
