@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Overtime — Admin Panel</title>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:#faf7f9;color:#242124}button,input,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.sidebar{width:245px;background:#fff;border-right:1px solid #f0dce5;padding:20px 14px;position:fixed;inset:0 auto 0 0;z-index:20}.brand{padding:10px 12px 22px;border-bottom:1px solid #f2e5ea;margin-bottom:16px}.brand b{font-size:21px;color:#e2136e}.brand span{display:block;font-size:11px;color:#8d8188;margin-top:5px}.nav{display:grid;gap:8px}.nav button{width:100%;text-align:left;background:#fff;color:#665d63;border:1px solid transparent;border-radius:12px;padding:13px 12px;font-weight:800}.nav button.active{background:#fff0f6;color:#e2136e;border-color:#f5cddd}.nav button:hover{border-color:#f3d6e2}.side-bottom{position:absolute;bottom:18px;left:14px;right:14px;border:1px solid #f0dce5;background:#fffafd;border-radius:12px;padding:11px;font-size:10px;color:#8a7d85}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#17a673;margin-right:6px}.main{margin-left:245px;width:calc(100% - 245px);padding:22px;max-width:1500px}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.top h1{margin:0;font-size:24px}.top p{margin:5px 0 0;color:#8a7d85;font-size:12px}.status{background:#fff;border:1px solid #efdce5;padding:9px 12px;border-radius:11px;font-size:11px;font-weight:800}.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.stat{background:#fff;border:1px solid #f0dce5;border-radius:16px;padding:15px;min-height:108px}.stat small{display:block;color:#8b7e86;font-size:11px}.stat b{display:block;color:#e2136e;font-size:26px;margin-top:13px}.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.box{background:#fff;border:1px solid #f0dce5;border-radius:16px;padding:16px}.box h2{font-size:15px;margin:0 0 12px}.box h3{font-size:12px;margin:0 0 9px;color:#e2136e}.notice textarea{min-height:105px;resize:vertical;border:1px solid #ead9e0;border-radius:11px;padding:11px;width:100%;outline:0}.notice textarea:focus,.search:focus{border-color:#e2136e;box-shadow:0 0 0 3px #fff0f6}.btnrow{display:flex;gap:8px;margin-top:9px}.pink{background:#e2136e;color:#fff}.white{background:#fff;border:1px solid #ead9e0;color:#555}.btn{padding:10px 13px;border-radius:10px;font-size:11px;font-weight:800}.feed{display:grid;gap:8px}.feed-item{border:1px solid #f0dfe6;background:#fffafd;border-radius:11px;padding:10px;font-size:11px}.feed-item b{color:#e2136e;display:block;margin-bottom:4px}.toolbar{display:flex;gap:9px;margin-bottom:12px}.search{flex:1;border:1px solid #ead9e0;border-radius:11px;padding:11px;background:#fff;outline:0}.count{padding:11px 13px;border-radius:11px;background:#fff0f6;color:#e2136e;font-weight:900;font-size:11px}.accounts{display:grid;grid-template-columns:350px 1fr;gap:14px}.list{max-height:calc(100vh - 170px);overflow:auto}.user{border:1px solid #f0dfe6;border-radius:13px;padding:12px;margin-bottom:8px;background:#fff;cursor:pointer}.user:hover,.user.selected{border-color:#e2136e;background:#fff5f9}.user-top{display:flex;gap:9px;align-items:center}.avatar{width:38px;height:38px;border-radius:10px;background:#e2136e;color:#fff;display:grid;place-items:center;font-weight:900}.u-main{min-width:0}.u-main strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.muted{font-size:10px;color:#8b7e86;margin-top:3px}.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.tag{font-size:9px;padding:4px 6px;border-radius:7px;background:#fff0f6;color:#e2136e}.tag.gray{background:#f7f5f6;color:#777}.detail{min-width:0}.profile-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f0e1e7;padding-bottom:12px;margin-bottom:12px}.profile-head h2{margin:0;font-size:17px}.subtabs{display:flex;gap:7px;margin-bottom:12px}.subtabs button{padding:8px 10px;border-radius:9px;background:#f8f5f7;color:#666;font-size:10px;font-weight:800}.subtabs button.active{background:#e2136e;color:#fff}.detail-section{border:1px solid #f0dfe6;border-radius:13px;margin-bottom:10px;overflow:hidden}.detail-section>header{background:#fff4f8;color:#e2136e;padding:9px 11px;font-size:11px;font-weight:900}.kv{display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid #f3e8ec;padding:8px 11px;font-size:11px}.kv:last-child{border:0}.kv .k{color:#8a7e85}.kv .v{word-break:break-word}.editgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:11px}.field label{display:block;color:#8a7e85;font-size:9px;font-weight:800;margin-bottom:4px}.field input{width:100%;border:1px solid #ead9e0;border-radius:9px;padding:9px;outline:0}.raw{padding:11px}.raw textarea{width:100%;min-height:330px;border:1px solid #ead9e0;border-radius:10px;padding:10px;font:11px monospace;outline:0}.actions{display:flex;gap:8px;padding:11px;border-top:1px solid #f0dfe6}.actions .btn{flex:1}.danger{background:#fff0f2;color:#c4004f;border:1px solid #f5ceda}.empty{padding:35px;text-align:center;color:#999;font-size:12px}.locations{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.loc{border:1px solid #f0dfe6;border-radius:12px;padding:12px;background:#fff}.loc b{font-size:12px}.loc span{display:block;color:#e2136e;font-size:22px;font-weight:900;margin-top:6px}.mobile-menu{display:none}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(3,1fr)}.accounts{grid-template-columns:300px 1fr}.section-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}.main{margin-left:0;width:100%;padding:14px}.mobile-menu{display:block;background:#e2136e;color:#fff;border-radius:9px;padding:9px 12px;font-weight:900}.top{align-items:flex-start}.top h1{font-size:20px}.cards{grid-template-columns:1fr 1fr}.accounts{grid-template-columns:1fr}.list{max-height:390px}.editgrid{grid-template-columns:1fr}.locations{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.cards{grid-template-columns:1fr}.top{flex-wrap:wrap}.kv{grid-template-columns:110px 1fr}.locations{grid-template-columns:1fr}}
+
+/* App-style side-by-side box layout */
+.box-grid, .cards-grid, .stats-grid, .account-grid, .dashboard-grid {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+  align-items:stretch;
+}
+.box-grid > *, .cards-grid > *, .stats-grid > *, .account-grid > *, .dashboard-grid > * {
+  min-width:0;
+}
+@media (min-width:700px){
+  .box-grid, .cards-grid, .stats-grid, .account-grid, .dashboard-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+@media (min-width:1000px){
+  .box-grid, .cards-grid, .stats-grid, .account-grid, .dashboard-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  }
+}
+/* Make common stat/card containers form a compact phone-app grid */
+.stats, .stat-cards, .metric-grid, .quick-grid, .action-grid {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+@media (min-width:700px){
+  .stats, .stat-cards, .metric-grid, .quick-grid, .action-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+@media (min-width:1000px){
+  .stats, .stat-cards, .metric-grid, .quick-grid, .action-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  }
+}
+
+
+/* v4 fixes: clean Menu/Dashboard spacing + delete/reset controls */
+.title-line{display:flex;align-items:center;gap:12px;min-height:40px}.title-line .mobile-menu{margin:0;flex:0 0 auto}.title-line h1{line-height:1.2}.title-wrap>p{margin-left:52px!important}.total-user-card{cursor:default}.total-card-actions{display:flex;gap:7px;margin-top:11px;padding-top:10px;border-top:1px solid #f3e2e9}.small-btn{padding:8px 10px!important;font-size:10px!important;flex:1}.feed-item{display:flex;align-items:center;justify-content:space-between;gap:12px}.feed-item>div{min-width:0;flex:1}.feed-delete{flex:0 0 auto!important;padding:8px 11px!important;font-size:10px!important}.btn.danger{background:#fff1f3;color:#d92b55;border:1px solid #f3c4cf}.btn.danger:hover{background:#ffe5eb}
+@media(max-width:760px){.title-wrap>p{margin-left:0!important}.title-line{gap:10px}.title-line h1{font-size:20px}.feed-item{align-items:flex-start}.feed-delete{margin-top:2px}}
+@media(max-width:430px){.title-line{gap:8px}.mobile-menu{padding:8px 10px!important}}
+</style>
+
+<style id="app-side-by-side-overrides">
+main .row, main .cards, main .card-row, main .tile-row {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+@media (min-width:700px){
+  main .row, main .cards, main .card-row, main .tile-row {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+@media (min-width:1000px){
+  main .row, main .cards, main .card-row, main .tile-row {
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  }
+}
+</style>
+
+
+<style id="mobile-menu-final-fix">
+.mobile-menu{display:none!important}
+.menu-close{display:none}
+.menu-overlay{display:none}
+@media(max-width:760px){
+  .mobile-menu{display:block!important;position:relative;z-index:2}
+  .sidebar{width:285px!important;max-width:86vw!important;transform:translateX(-110%)!important;transition:transform .22s ease!important;z-index:1001!important;box-shadow:12px 0 35px rgba(60,20,40,.12)!important;overflow-y:auto!important}
+  .sidebar.open{transform:translateX(0)!important}
+  .menu-close{display:block;position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:10px;background:#fff0f6;color:#e2136e;border:1px solid #f5cddd;font-weight:900;font-size:18px}
+  .menu-overlay{display:block;position:fixed;inset:0;background:rgba(40,20,30,.28);z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .menu-overlay.show{opacity:1;pointer-events:auto}
+  .brand{padding-right:48px}
+}
+</style>
+
+<style id="custom-confirm-style">
+.confirm-modal{display:none;position:fixed;inset:0;background:rgba(35,20,28,.42);z-index:2000;align-items:center;justify-content:center;padding:18px}
+.confirm-modal.show{display:flex}
+.confirm-box{width:min(390px,100%);background:#fff;border:1px solid #f0c5d7;border-radius:20px;padding:20px;box-shadow:0 22px 70px rgba(40,20,30,.22)}
+.confirm-title{font-size:18px;font-weight:900;color:#e2136e;margin-bottom:9px}
+.confirm-text{font-size:13px;line-height:1.6;color:#4b4348;white-space:pre-wrap}
+.confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.confirm-actions .btn{min-width:82px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="menu-overlay" id="menuOverlay" onclick="toggleSide(false)"></div><aside class="sidebar" id="sidebar"><button class="menu-close" type="button" onclick="toggleSide(false)">×</button><div class="brand"><b>MY OVERTIME</b><span>Administrator Control Panel</span></div>
+<nav class="nav"><button class="active" onclick="page('dashboard',this)">Dashboard</button><button onclick="page('active',this)">Active Account</button><button onclick="page('total',this)">Total Account</button></nav>
+<div class="side-bottom"><span class="dot"></span>Firebase Live Sync<br><span style="margin-left:13px">Data changes update automatically.</span></div></aside>
+<main class="main"><div class="top"><div class="title-wrap"><div class="title-line"><button class="mobile-menu" type="button" onclick="toggleSide(true)">Menu</button><h1 id="title">Dashboard</h1></div><p id="subtitle">Account activity, updates and notices</p></div><div class="status"><span class="dot"></span><span id="syncText">Live</span></div></div>
+
+<section id="dashboard" class="page active">
+<div class="cards"><div class="stat"><small>Active Users</small><b id="activeCount">0</b></div><div class="stat"><small>Inactive Users</small><b id="inactiveCount">0</b></div><div class="stat"><small>Last Active Time</small><b id="lastActive" style="font-size:14px">—</b></div><div class="stat"><small>Latest Update</small><b id="updateCount">0</b></div><div class="stat"><small>Daily User</small><b id="dailyCount">0</b></div></div>
+<div class="section-grid"><div class="box notice"><h2>Notice Add</h2><textarea id="noticeText" placeholder="Write notice here"></textarea><div class="btnrow"><button class="btn pink" onclick="saveNotice()">Publish Notice</button><button class="btn white" onclick="clearBox('noticeText')">Clear</button></div></div><div class="box notice"><h2>Popular Notice</h2><textarea id="popularText" placeholder="Write here to show a Popup Box in User HTML"></textarea><div class="btnrow"><button class="btn pink" onclick="savePopular()">Publish Popup</button><button class="btn white" onclick="clearBox('popularText')">Clear</button></div></div></div>
+<div class="box" style="margin-top:14px"><h2>Published Notice</h2><div class="feed" id="noticeFeed"><div class="empty">No Notice</div></div></div>
+</section>
+
+<section id="active" class="page"><div class="toolbar"><input id="activeSearch" class="search" placeholder="Search by Name / Employee ID / Office / Section" oninput="renderActive()"><div class="count" id="activeListCount">0 Active</div></div><div class="accounts"><div class="box list" id="activeList"></div><div class="box detail" id="activeDetail"><div class="empty">Select an Active Account from the left</div></div></div></section>
+
+<section id="total" class="page"><div class="toolbar"><input id="totalSearch" class="search" placeholder="Search all accounts" oninput="renderTotal()"><div class="count" id="totalListCount">0 Accounts</div></div><div class="box" style="margin-bottom:14px"><h2>Location Overview</h2><div class="locations" id="locations"></div></div><div class="box"><h2>All Accounts</h2><div id="totalList"></div></div></section>
+</main></div>
+
+<div id="confirmModal" class="confirm-modal" aria-hidden="true">
+  <div class="confirm-box" role="dialog" aria-modal="true">
+    <div class="confirm-title">Confirm</div>
+    <div id="confirmText" class="confirm-text"></div>
+    <div class="confirm-actions">
+      <button class="btn white" type="button" onclick="closeConfirmBox(false)">Cancel</button>
+      <button class="btn pink" type="button" onclick="closeConfirmBox(true)">OK</button>
+    </div>
+  </div>
+</div>
+<div id="toast" style="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:11px 15px;border-radius:10px;font-size:11px;display:none;z-index:99"></div>
+<script>
+const firebaseConfig={apiKey:"AIzaSyA72vpoVjjuLpU3UJA1Y5j-aX1A1tsoPKY",authDomain:"my-overtime-9a89b.firebaseapp.com",databaseURL:"https://my-overtime-9a89b-default-rtdb.firebaseio.com",projectId:"my-overtime-9a89b",storageBucket:"my-overtime-9a89b.firebasestorage.app",messagingSenderId:"413075154428",appId:"1:413075154428:web:76ebdfcf815ccd79d23e79",measurementId:"G-5N3FXNJ9FD"};
+firebase.initializeApp(firebaseConfig);const db=firebase.database(),usersRef=db.ref('myOvertimeUsers');let users={},selected=null;
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const fmt=t=>{if(!t)return '—';const d=new Date(Number(t));return isNaN(d)?'—':d.toLocaleString('bn-BD')};
+const last=d=>Number(d?.lastSeen||d?.lastActive||d?.updatedAt||d?.activity?.lastActive||d?.activity?.lastSeen||0);
+const isActive=d=>last(d)>Date.now()-30*60*1000;
+const loc=d=>d?.profile?.location||d?.location||d?.profile?.office||'—';
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function page(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const meta={dashboard:['Dashboard','Account activity, updates and notices'],active:['Active Account','Only currently active accounts are shown here'],total:['Total Account','All registered accounts and their locations']};document.getElementById('title').textContent=meta[id][0];document.getElementById('subtitle').textContent=meta[id][1];toggleSide(false);if(id==='active')renderActive();if(id==='total')renderTotal()}
+function toggleSide(force){const s=document.getElementById('sidebar'),o=document.getElementById('menuOverlay');const open=force===true || (force===undefined && !s.classList.contains('open'));s.classList.toggle('open',open);o.classList.toggle('show',open)}
+function nameOf(k,d){return d?.profile?.name||d?.name||'Unnamed User'}
+function userCard(k,d,activeClass=false){const n=nameOf(k,d),p=d?.profile||{};return `<div class="user ${selected===k&&activeClass?'selected':''}" onclick="selectUser('${esc(k)}')"><div class="user-top"><div class="avatar">${esc(n.trim().charAt(0).toUpperCase()||'U')}</div><div class="u-main"><strong>${esc(n)}</strong><div class="muted">ID: ${esc(p.id||'—')}</div></div></div><div class="tags"><span class="tag">${esc(p.office||'No Office')}</span><span class="tag gray">${esc(p.section||'No Section')}</span></div><div class="muted">Last Active: ${esc(fmt(last(d)))}</div></div>`}
+function renderActive(){const q=(document.getElementById('activeSearch').value||'').toLowerCase();const a=Object.entries(users).filter(([k,d])=>isActive(d)&&(!q||[k,nameOf(k,d),d?.profile?.id,d?.profile?.office,d?.profile?.section].some(v=>String(v||'').toLowerCase().includes(q))));document.getElementById('activeListCount').textContent=a.length+' Active';document.getElementById('activeList').innerHTML=a.length?a.map(x=>userCard(x[0],x[1],true)).join(''):'<div class="empty">No Active Accounts</div>'}
+function totalCard(k,d){const n=(d?.setupComplete===false?'Setup Required':nameOf(k,d)),p=d?.profile||{};return `<div class="user total-user-card"><div onclick="selectUser('${esc(k)}')"><div class="user-top"><div class="avatar">${esc(n.trim().charAt(0).toUpperCase()||'U')}</div><div class="u-main"><strong>${esc(n||'New User')}</strong><div class="muted">ID: ${esc(p.id||'—')}</div></div></div><div class="tags"><span class="tag">${esc(p.office||'No Office')}</span><span class="tag gray">${esc(p.section||'No Section')}</span></div><div class="muted">Location: ${esc(loc(d))}</div></div><div class="total-card-actions"><button class="btn white small-btn" onclick="selectUser('${esc(k)}')">Profile</button><button class="btn danger small-btn" onclick="resetUserAccount('${esc(k)}',event)">Delete Profile</button></div></div>`}
+function renderTotal(){const q=(document.getElementById('totalSearch').value||'').toLowerCase();const a=Object.entries(users).filter(([k,d])=>!q||[k,nameOf(k,d),d?.profile?.id,d?.profile?.office,d?.profile?.location,d?.location].some(v=>String(v||'').toLowerCase().includes(q)));document.getElementById('totalListCount').textContent=a.length+' Accounts';document.getElementById('totalList').innerHTML=a.length?a.map(x=>totalCard(x[0],x[1])).join(''):'<div class="empty">No Accounts</div>';renderLocations()}
+function renderLocations(){const c={};Object.values(users).forEach(d=>{const l=loc(d);c[l]=(c[l]||0)+1});const a=Object.entries(c).sort((x,y)=>y[1]-x[1]);document.getElementById('locations').innerHTML=a.length?a.map(([l,n])=>`<div class="loc"><b>${esc(l)}</b><span>${n}</span></div>`).join(''):'<div class="empty">No Location Data</div>'}
+function kv(k,v){return `<div class="kv"><div class="k">${esc(k)}</div><div class="v">${esc(v===undefined||v===null||v===''?'—':typeof v==='object'?JSON.stringify(v):v)}</div></div>`}
+function section(title,content){return `<div class="detail-section"><header>${esc(title)}</header>${content}</div>`}
+function selectUser(k){selected=k;const d=users[k]||{},p=d.profile||{},s=d.salary||{};const dyn=Object.entries(d).filter(([key])=>!['profile','salary','selectedMonth','setupComplete'].includes(key));let profile=kv('Name',p.name)+kv('Employee ID',p.id||'—')+kv('Office',p.office)+kv('Section',p.section)+kv('Join Date',p.join)+kv('Location',p.location||d.location)+kv('Selected Month',d.selectedMonth);let salary=kv('Basic Salary',s.basic)+kv('OT Rate / Hour',s.otRate)+kv('Tiffin',s.tiffin)+kv('Night Allowance',s.night)+kv('Attendance Bonus',s.attendance);let activity=kv('Last Active',fmt(last(d)))+kv('Update Count',d.updateCount||d.latestUpdateCount||d.activity?.updateCount||0)+kv('Setup Complete',d.setupComplete?'Yes':'No');let other=dyn.map(([key,v])=>kv(key,typeof v==='object'?JSON.stringify(v):v)).join('');document.getElementById('activeDetail').innerHTML=`<div class="profile-head"><h2>${esc(nameOf(k,d))}</h2><span class="tag">${isActive(d)?'ACTIVE':'INACTIVE'}</span></div><div class="subtabs"><button class="active">Profile</button><button onclick="showRaw('${esc(k)}')">A to Z Data</button><button onclick="showEdit('${esc(k)}')">Edit</button></div><div id="detailBody">${section('Profile Information',profile)}${section('Salary & Allowance',salary)}${section('Activity',activity)}${other?section('Other Firebase Data',other):''}<div class="actions"><button class="btn pink" onclick="showEdit('${esc(k)}')">Edit User</button><button class="btn danger" onclick="deleteUser('${esc(k)}')">Delete User</button></div></div>`}
+function showRaw(k){const d=users[k]||{};document.getElementById('detailBody').innerHTML=`<div class="detail-section"><header>Complete A to Z Data</header><div class="raw"><textarea id="rawJson">${esc(JSON.stringify(d,null,2))}</textarea></div></div><div class="actions"><button class="btn pink" onclick="saveRaw('${esc(k)}')">Save Data</button><button class="btn white" onclick="selectUser('${esc(k)}')">Back to Profile</button></div>`}
+function showEdit(k){const d=users[k]||{},p=d.profile||{},s=d.salary||{};document.getElementById('detailBody').innerHTML=`<div class="detail-section"><header>Edit Account</header><div class="editgrid">${field('Name','eName',p.name)}${field('Employee ID','eId',p.id||k)}${field('Office','eOffice',p.office)}${field('Section','eSection',p.section)}${field('Join Date','eJoin',p.join)}${field('Location','eLocation',p.location||d.location)}${field('Selected Month','eMonth',d.selectedMonth)}${field('Basic Salary','eBasic',s.basic)}${field('OT Rate / Hour','eOt',s.otRate)}${field('Tiffin','eTiffin',s.tiffin)}${field('Night Allowance','eNight',s.night)}${field('Attendance Bonus','eAttendance',s.attendance)}</div></div><div class="actions"><button class="btn pink" onclick="saveEdit('${esc(k)}')">Save Changes</button><button class="btn white" onclick="selectUser('${esc(k)}')">Cancel</button></div>`}
+function field(label,id,val){return `<div class="field"><label>${esc(label)}</label><input id="${id}" value="${esc(val??'')}"></div>`}
+async function saveEdit(k){const d=JSON.parse(JSON.stringify(users[k]||{}));d.profile=d.profile||{};d.salary=d.salary||{};d.profile.name=document.getElementById('eName').value.trim();d.profile.id=document.getElementById('eId').value.trim()||k;d.profile.office=document.getElementById('eOffice').value.trim();d.profile.section=document.getElementById('eSection').value.trim();d.profile.join=document.getElementById('eJoin').value.trim();d.profile.location=document.getElementById('eLocation').value.trim();d.location=d.profile.location;d.selectedMonth=document.getElementById('eMonth').value.trim();d.salary.basic=Number(document.getElementById('eBasic').value)||0;d.salary.otRate=Number(document.getElementById('eOt').value)||0;d.salary.tiffin=Number(document.getElementById('eTiffin').value)||0;d.salary.night=Number(document.getElementById('eNight').value)||0;d.salary.attendance=Number(document.getElementById('eAttendance').value)||0;try{await usersRef.child(k).set(d);toast('User updated');}catch(e){toast('Update failed')}}
+async function saveRaw(k){try{const d=JSON.parse(document.getElementById('rawJson').value);await usersRef.child(k).set(d);toast('Data saved')}catch(e){toast('Invalid JSON — Save failed')}}
+async function deleteUser(k){const n=nameOf(k,users[k]);askConfirm('"'+n+'" Delete this account?',async()=>{try{await usersRef.child(k).remove();selected=null;document.getElementById('activeDetail').innerHTML='<div class="empty">Account deleted</div>';toast('Account deleted')}catch(e){toast('Delete failed')}})}
+function resetUserAccount(k,event){if(event)event.stopPropagation();const n=nameOf(k,users[k]);askConfirm('"'+n+'" Deleting this profile will reset all user data to 0/blank and require setup again. Continue?',async()=>{const old=users[k]||{};const language=old.language==='bn'?'bn':'en';const reset={setupComplete:false,profile:{office:'',name:'',id:'',section:'',join:'',location:''},officeTitle:'',language,selectedMonth:'',salary:{basic:0,tiffin:0,night:0,otRate:0,attendance:0,tiffinMin:4,nightMin:6,fridayTiffinMin:12,fridayNightMin:14},overtime:[],updateCount:0};try{await usersRef.child(k).set(reset);if(selected===k){selected=null;document.getElementById('activeDetail').innerHTML='<div class="empty">Profile reset. User must complete setup again.</div>'}toast('Profile reset successfully — new setup is required');}catch(e){console.error(e);toast('Profile reset failed')}})}
+
+let confirmAction=null;function askConfirm(message,action){document.getElementById('confirmText').textContent=message;confirmAction=action;document.getElementById('confirmModal').classList.add('show');document.getElementById('confirmModal').setAttribute('aria-hidden','false')}function closeConfirmBox(ok){const m=document.getElementById('confirmModal');m.classList.remove('show');m.setAttribute('aria-hidden','true');const fn=confirmAction;confirmAction=null;if(ok&&typeof fn==='function')fn()}
+function clearBox(id){document.getElementById(id).value=''}
+function saveNotice(){const text=document.getElementById('noticeText').value.trim();if(!text)return;db.ref('myOvertimeAdmin/notices/current').set({text,updatedAt:Date.now()}).then(()=>{clearBox('noticeText');toast('Notice published')})}
+function savePopular(){const text=document.getElementById('popularText').value.trim();if(!text)return;db.ref('myOvertimeAdmin/popularNotice').set({text,updatedAt:Date.now(),active:true}).then(()=>{clearBox('popularText');toast('Popular Notice published')})}
+function deleteNotice(){askConfirm('Delete the current notice?',()=>db.ref('myOvertimeAdmin/notices/current').remove().then(()=>toast('Notice deleted')).catch(()=>toast('Notice delete failed')))}
+function deletePopular(){askConfirm('Delete the current popular popup?',()=>db.ref('myOvertimeAdmin/popularNotice').remove().then(()=>toast('Popup deleted')).catch(()=>toast('Popup delete failed')))}
+let globalUpdateCount=null;function renderStats(){const a=Object.values(users),active=a.filter(isActive),now=new Date();now.setHours(0,0,0,0);const daily=a.filter(d=>last(d)>=now.getTime()).length;const fallback=a.reduce((n,d)=>n+Number(d?.updateCount||d?.latestUpdateCount||d?.activity?.updateCount||0),0);const updates=globalUpdateCount===null?fallback:Number(globalUpdateCount);document.getElementById('activeCount').textContent=active.length;document.getElementById('inactiveCount').textContent=a.length-active.length;document.getElementById('dailyCount').textContent=daily;document.getElementById('updateCount').textContent=updates;document.getElementById('lastActive').textContent=fmt(Math.max(0,...a.map(last)))}
+db.ref('myOvertimeAdmin/latestUpdateCount').on('value',snap=>{const v=snap.val();if(v===null){globalUpdateCount=null;renderStats();}else{globalUpdateCount=Number(v)||0;renderStats();}});
+usersRef.on('value',snap=>{users=snap.val()||{};if(globalUpdateCount===null){const seed=Object.values(users).reduce((n,d)=>n+Number(d?.updateCount||d?.latestUpdateCount||d?.activity?.updateCount||0),0);if(seed>0)db.ref('myOvertimeAdmin/latestUpdateCount').set(seed);}renderStats();if(document.getElementById('active').classList.contains('active'))renderActive();if(document.getElementById('total').classList.contains('active'))renderTotal();if(selected&&users[selected]&&document.getElementById('active').classList.contains('active'))selectUser(selected);document.getElementById('syncText').textContent='Live';});
+db.ref('myOvertimeAdmin').on('value',snap=>{const x=snap.val()||{};let h='';if(x.notices?.current?.text)h+=`<div class="feed-item"><div><b>Notice</b><div>${esc(x.notices.current.text)}</div></div><button class="btn danger feed-delete" onclick="deleteNotice()">Delete</button></div>`;if(x.popularNotice?.text)h+=`<div class="feed-item"><div><b>Popular Notice / Popup</b><div>${esc(x.popularNotice.text)}</div></div><button class="btn danger feed-delete" onclick="deletePopular()">Delete</button></div>`;document.getElementById('noticeFeed').innerHTML=h||'<div class="empty">No Notice or Popup</div>'});
+setInterval(renderStats,60000);
+</script>
+</body></html>
